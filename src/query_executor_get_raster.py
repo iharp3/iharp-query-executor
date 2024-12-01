@@ -1,25 +1,23 @@
-from query_executor import QueryExecutor
-
-
-import numpy as np
-import xarray as xr
 import cdsapi
+import xarray as xr
+
+from query_executor import *
 
 
 class GetRasterExecutor(QueryExecutor):
     def __init__(
-        self,
-        variable: str,
-        start_datetime: str,
-        end_datetime: str,
-        min_lat: float,
-        max_lat: float,
-        min_lon: float,
-        max_lon: float,
-        temporal_resolution="hour",  # e.g., "hour", "day", "month", "year"
-        temporal_aggregation=None,  # e.g., "mean", "max", "min"
-        spatial_resolution=0.25,  # e.g., 0.25, 0.5, 1.0
-        spatial_aggregation=None,  # e.g., "mean", "max", "min"
+            self,
+            variable: str,
+            start_datetime: str,
+            end_datetime: str,
+            min_lat: float,
+            max_lat: float,
+            min_lon: float,
+            max_lon: float,
+            temporal_resolution="hour",  # e.g., "hour", "day", "month", "year"
+            temporal_aggregation=None,  # e.g., "mean", "max", "min"
+            spatial_resolution=0.25,  # e.g., 0.25, 0.5, 1.0
+            spatial_aggregation=None,  # e.g., "mean", "max", "min"
     ):
         super().__init__(
             variable,
@@ -35,26 +33,27 @@ class GetRasterExecutor(QueryExecutor):
             spatial_aggregation,
         )
 
-    def check_metadata(self):
+    def _check_metadata(self):
         """
         Return: [local_files], [api_calls]
         """
-        df_relevant = self.get_relevant_meta()
-        ds_query = self.gen_empty_query_result_xarray()
-        false_mask = xr.DataArray(
-            np.zeros((ds_query.sizes["latitude"], ds_query.sizes["longitude"], ds_query.sizes["time"]), dtype=bool),
-            dims=["latitude", "longitude", "time"],
+        df_overlap, leftover = self.metadata.query_get_overlap_and_residual(
+            self.variable,
+            self.start_datetime,
+            self.end_datetime,
+            self.min_lat,
+            self.max_lat,
+            self.min_lon,
+            self.max_lon,
+            self.temporal_resolution,
+            self.temporal_aggregation,
+            self.spatial_resolution,
+            self.spatial_aggregation
         )
-        for _, row in df_relevant.itertuples():
-            ds_meta = QueryExecutor.gen_xarray_for_meta(row)
-            mask = QueryExecutor.mask_query_with_meta(ds_query, ds_meta)
-            false_mask = false_mask | mask
 
-        query_fully_covered = false_mask.all().values
-        if query_fully_covered:
-            return df_relevant["file_path"].tolist(), []
-        else:
-            leftover = false_mask.where(false_mask == False, drop=True)
+        local_files = df_overlap["file_path"].tolist()
+        api_calls = []
+        if leftover is not None:
             leftover_min_lat = leftover.latitude.min().item()
             leftover_max_lat = leftover.latitude.max().item()
             leftover_min_lon = leftover.longitude.min().item()
@@ -74,16 +73,17 @@ class GetRasterExecutor(QueryExecutor):
                 "download_format": "unarchived",
                 "area": [leftover_max_lat, leftover_min_lon, leftover_min_lat, leftover_max_lon],
             }
-            return df_relevant["file_path"].tolist(), [(dataset, request)]
+            api_calls.append((dataset, request))
+        return local_files, api_calls
 
     def execute(self):
-        file_list, api = self.check_metadata()
+        file_list, api = self._check_metadata()
 
         # 1. call apis
         if api:
             c = cdsapi.Client()
             for dataset, request in api:
-                file_name = QueryExecutor.gen_download_file_name()
+                file_name = gen_download_file_name()
                 c.retrieve(dataset, request).download(file_name)
                 file_list.append(file_name)
 
