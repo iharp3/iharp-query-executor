@@ -6,13 +6,13 @@ from utils.const import lat_range, lon_range, time_resolution_to_freq
 
 
 def gen_empty_xarray(
-        min_lat,
-        max_lat,
-        min_lon,
-        max_lon,
-        start_datetime,
-        end_datetime,
-        temporal_resolution,
+    min_lat,
+    max_lat,
+    min_lon,
+    max_lon,
+    start_datetime,
+    end_datetime,
+    temporal_resolution,
 ):
     lat_start = lat_range.searchsorted(min_lat, side="left")
     lat_end = lat_range.searchsorted(max_lat, side="right")
@@ -36,32 +36,38 @@ class Metadata:
 
     @staticmethod
     def _gen_xarray_for_meta_row(row):
-        return gen_empty_xarray(row["min_lat"], row["max_lat"],
-                                row["min_lon"], row["max_lon"],
-                                row["start_datetime"], row["end_datetime"],
-                                row["temporal_resolution"])
+        return gen_empty_xarray(
+            row["min_lat"],
+            row["max_lat"],
+            row["min_lon"],
+            row["max_lon"],
+            row["start_datetime"],
+            row["end_datetime"],
+            row["temporal_resolution"],
+        )
 
     @staticmethod
     def _mask_query_with_meta(ds_query, ds_meta):
         return (
-                ds_query["latitude"].isin(ds_meta["latitude"])
-                & ds_query["longitude"].isin(ds_meta["longitude"])
-                & ds_query["time"].isin(ds_meta["time"])
+            ds_query["latitude"].isin(ds_meta["latitude"])
+            & ds_query["longitude"].isin(ds_meta["longitude"])
+            & ds_query["time"].isin(ds_meta["time"])
         )
 
     def query_get_overlap_and_leftover(
-            self,
-            variable,
-            start_datetime,
-            end_datetime,
-            min_lat,
-            max_lat,
-            min_lon,
-            max_lon,
-            temporal_resolution,
-            temporal_aggregation,
-            spatial_resolution,
-            spatial_aggregation):
+        self,
+        variable,
+        start_datetime,
+        end_datetime,
+        min_lat,
+        max_lat,
+        min_lon,
+        max_lon,
+        temporal_resolution,
+        temporal_aggregation,
+        spatial_resolution,
+        spatial_aggregation,
+    ):
         df_overlap = self.df_meta[
             (self.df_meta["variable"] == variable)
             & (self.df_meta["min_lat"] <= max_lat)
@@ -74,18 +80,20 @@ class Metadata:
             & (self.df_meta["spatial_aggregation"] == spatial_aggregation)
             & (self.df_meta["temporal_resolution"] == temporal_resolution)
             & (self.df_meta["spatial_resolution"] == spatial_resolution)
-            ]
+        ]
 
-        ds_query = gen_empty_xarray(min_lat, max_lat,
-                                    min_lon, max_lon,
-                                    start_datetime, end_datetime,
-                                    temporal_resolution)
+        ds_query = gen_empty_xarray(
+            min_lat, max_lat, min_lon, max_lon, start_datetime, end_datetime, temporal_resolution
+        )
         false_mask = xr.DataArray(
-            np.zeros((
-                ds_query.sizes["time"],
-                ds_query.sizes["latitude"],
-                ds_query.sizes["longitude"],
-            ), dtype=bool),
+            np.zeros(
+                (
+                    ds_query.sizes["time"],
+                    ds_query.sizes["latitude"],
+                    ds_query.sizes["longitude"],
+                ),
+                dtype=bool,
+            ),
             dims=["time", "latitude", "longitude"],
         )
 

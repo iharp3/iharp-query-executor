@@ -6,18 +6,18 @@ from query_executor import *
 
 class GetRasterExecutor(QueryExecutor):
     def __init__(
-            self,
-            variable: str,
-            start_datetime: str,
-            end_datetime: str,
-            min_lat: float,
-            max_lat: float,
-            min_lon: float,
-            max_lon: float,
-            temporal_resolution="hour",  # e.g., "hour", "day", "month", "year"
-            temporal_aggregation=None,  # e.g., "mean", "max", "min"
-            spatial_resolution=0.25,  # e.g., 0.25, 0.5, 1.0
-            spatial_aggregation=None,  # e.g., "mean", "max", "min"
+        self,
+        variable: str,
+        start_datetime: str,
+        end_datetime: str,
+        min_lat: float,
+        max_lat: float,
+        min_lon: float,
+        max_lon: float,
+        temporal_resolution="hour",  # e.g., "hour", "day", "month", "year"
+        temporal_aggregation=None,  # e.g., "mean", "max", "min"
+        spatial_resolution=0.25,  # e.g., 0.25, 0.5, 1.0
+        spatial_aggregation=None,  # e.g., "mean", "max", "min"
     ):
         super().__init__(
             variable,
@@ -48,7 +48,7 @@ class GetRasterExecutor(QueryExecutor):
             self.temporal_resolution,
             self.temporal_aggregation,
             self.spatial_resolution,
-            self.spatial_aggregation
+            self.spatial_aggregation,
         )
 
         local_files = df_overlap["file_path"].tolist()

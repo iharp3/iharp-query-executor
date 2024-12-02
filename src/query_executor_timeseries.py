@@ -4,17 +4,17 @@ from query_executor_get_raster import GetRasterExecutor
 
 class TimeseriesExecutor(QueryExecutor):
     def __init__(
-            self,
-            variable: str,
-            start_datetime: str,
-            end_datetime: str,
-            temporal_resolution: str,  # e.g., "hour", "day", "month", "year"
-            temporal_aggregation: str,  # e.g., "mean", "max", "min"
-            min_lat: float,
-            max_lat: float,
-            min_lon: float,
-            max_lon: float,
-            time_series_aggregation_method: str,  # e.g., "mean", "max", "min"
+        self,
+        variable: str,
+        start_datetime: str,
+        end_datetime: str,
+        temporal_resolution: str,  # e.g., "hour", "day", "month", "year"
+        temporal_aggregation: str,  # e.g., "mean", "max", "min"
+        min_lat: float,
+        max_lat: float,
+        min_lon: float,
+        max_lon: float,
+        time_series_aggregation_method: str,  # e.g., "mean", "max", "min"
     ):
         super().__init__(
             variable,
