@@ -37,7 +37,7 @@ class GetRasterExecutor(QueryExecutor):
         """
         Return: [local_files], [api_calls]
         """
-        df_overlap, leftover = self.metadata.query_get_overlap_and_residual(
+        df_overlap, leftover = self.metadata.query_get_overlap_and_leftover(
             self.variable,
             self.start_datetime,
             self.end_datetime,

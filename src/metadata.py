@@ -35,7 +35,17 @@ class Metadata:
         self.df_meta = pd.read_csv(f_path)
 
     @staticmethod
-    def _gen_xarray_for_meta_row(row):
+    def _gen_xarray_for_meta_row(row, overwrite_temporal_resolution=None):
+        if overwrite_temporal_resolution is not None:
+            return gen_empty_xarray(
+                row["min_lat"],
+                row["max_lat"],
+                row["min_lon"],
+                row["max_lon"],
+                row["start_datetime"],
+                row["end_datetime"],
+                overwrite_temporal_resolution,
+            )
         return gen_empty_xarray(
             row["min_lat"],
             row["max_lat"],

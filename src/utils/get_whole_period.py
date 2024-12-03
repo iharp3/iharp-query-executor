@@ -21,7 +21,7 @@ def get_whole_year_between(start_dt, end_dt):
     residual = []
     last_hour_start_year = pd.Timestamp(f"{start_year}-12-31 23:00:00")
     first_hour_end_year = pd.Timestamp(f"{end_year}-01-01 00:00:00")
-    if end_dt <= last_hour_start_year:
+    if start_dt != first_hour_start_year and end_dt <= last_hour_start_year:
         residual.append([start_dt, end_dt])
     else:
         if start_dt != first_hour_start_year:
@@ -49,7 +49,7 @@ def get_whole_month_between(start_dt, end_dt):
     residual = []
     last_hour_start_month = pd.Timestamp(f"{year}-{start_month:02d}-{get_last_date_of_month(start_dt)} 23:00:00")
     first_hour_end_month = pd.Timestamp(f"{year}-{end_month:02d}-01 00:00:00")
-    if end_dt <= last_hour_start_month:
+    if start_dt != first_hour_start_month and end_dt <= last_hour_start_month:
         residual.append([start_dt, end_dt])
     else:
         if start_dt != first_hour_start_month:
@@ -79,7 +79,7 @@ def get_whole_day_between(start_dt, end_dt):
     residual = []
     last_hour_start_day = pd.Timestamp(f"{year}-{month:02d}-{start_day:02d} 23:00:00")
     first_hour_end_day = pd.Timestamp(f"{year}-{month:02d}-{end_day:02d} 00:00:00")
-    if end_dt <= last_hour_start_day:
+    if start_dt != first_hour_start_day and end_dt <= last_hour_start_day:
         residual.append([start_dt, end_dt])
     else:
         if start_dt != first_hour_start_day:
@@ -135,6 +135,50 @@ def get_whole_period_between(start, end):
     for h in whole_hours:
         print(h)
     return whole_years, whole_months, whole_days, whole_hours
+
+
+def get_whole_ranges_between(start, end):
+    year_range = []
+    month_range = []
+    day_range = []
+    hour_range = []
+    start_dt = pd.Timestamp(start)
+    end_dt = pd.Timestamp(end)
+    whole_years, residual = get_whole_year_between(start_dt, end_dt)
+    if whole_years:
+        year_start = pd.Timestamp(f"{whole_years[0]}-01-01 00:00:00")
+        year_end = pd.Timestamp(f"{whole_years[-1]}-12-31 23:00:00")
+        year_range.append([year_start, year_end])
+    for res in residual:
+        months, residual = get_whole_month_between(pd.Timestamp(res[0]), pd.Timestamp(res[1]))
+        if months:
+            month_start = pd.Timestamp(f"{months[0]}-01 00:00:00")
+            month_end = pd.Timestamp(f"{months[-1]}-{get_last_date_of_month(pd.Timestamp(months[-1]))} 23:00:00")
+            month_range.append([month_start, month_end])
+        for res in residual:
+            days, residual = get_whole_day_between(pd.Timestamp(res[0]), pd.Timestamp(res[1]))
+            if days:
+                day_start = pd.Timestamp(f"{days[0]} 00:00:00")
+                day_end = pd.Timestamp(f"{days[-1]} 23:00:00")
+                day_range.append([day_start, day_end])
+            for res in residual:
+                hour_start = pd.Timestamp(f"{res[0]}")
+                hour_end = pd.Timestamp(f"{res[1]}")
+                hour_range.append([hour_start, hour_end])
+    print("******************")
+    print("year range")
+    for y in year_range:
+        print(y)
+    print("month range")
+    for m in month_range:
+        print(m)
+    print("day range")
+    for d in day_range:
+        print(d)
+    print("hour range")
+    for h in hour_range:
+        print(h)
+    return year_range, month_range, day_range, hour_range
 
 
 def get_total_hours_in_year(year):
