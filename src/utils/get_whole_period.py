@@ -193,3 +193,22 @@ def get_total_hours_between(start, end):
     start_dt = pd.to_datetime(start)
     end_dt = pd.to_datetime(end)
     return int((end_dt - start_dt) / pd.Timedelta("1 hour")) + 1
+
+
+def iterate_months(start_month, end_month):
+    start_month = pd.to_datetime(start_month)
+    end_month = pd.to_datetime(end_month)
+    for n in range((end_month.year - start_month.year) * 12 + end_month.month - start_month.month + 1):
+        yield start_month + pd.DateOffset(months=n)
+
+
+def number_of_days_inclusive(start_day, end_day):
+    start_day = pd.to_datetime(start_day)
+    end_day = pd.to_datetime(end_day)
+    return (end_day - start_day).days + 1
+
+
+def number_of_hours_inclusive(start_hour, end_hour):
+    start_hour = pd.to_datetime(start_hour)
+    end_hour = pd.to_datetime(end_hour)
+    return int((end_hour - start_hour) / pd.Timedelta(hours=1)) + 1
