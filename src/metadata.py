@@ -59,9 +59,9 @@ class Metadata:
     @staticmethod
     def _mask_query_with_meta(ds_query, ds_meta):
         return (
-            ds_query["latitude"].isin(ds_meta["latitude"])
+            ds_query["time"].isin(ds_meta["time"])
+            & ds_query["latitude"].isin(ds_meta["latitude"])
             & ds_query["longitude"].isin(ds_meta["longitude"])
-            & ds_query["time"].isin(ds_meta["time"])
         )
 
     def query_get_overlap_and_leftover(

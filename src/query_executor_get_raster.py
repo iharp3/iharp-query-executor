@@ -65,7 +65,7 @@ class GetRasterExecutor(QueryExecutor):
             request = {
                 "product_type": ["reanalysis"],
                 "variable": [self.variable],
-                "year": [range(int(leftover_start_datetime[:4]), int(leftover_end_datetime[:4]) + 1)],
+                "year": list(range(int(leftover_start_datetime[:4]), int(leftover_end_datetime[:4]) + 1)),
                 "month": [str(i).zfill(2) for i in range(1, 13)],
                 "day": [str(i).zfill(2) for i in range(1, 32)],
                 "time": [f"{str(i).zfill(2)}:00" for i in range(0, 24)],
