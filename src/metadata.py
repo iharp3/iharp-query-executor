@@ -38,22 +38,22 @@ class Metadata:
     def _gen_xarray_for_meta_row(row, overwrite_temporal_resolution=None):
         if overwrite_temporal_resolution is not None:
             return gen_empty_xarray(
-                row["min_lat"],
-                row["max_lat"],
-                row["min_lon"],
-                row["max_lon"],
-                row["start_datetime"],
-                row["end_datetime"],
+                row.min_lat,
+                row.max_lat,
+                row.min_lon,
+                row.max_lon,
+                row.start_datetime,
+                row.end_datetime,
                 overwrite_temporal_resolution,
             )
         return gen_empty_xarray(
-            row["min_lat"],
-            row["max_lat"],
-            row["min_lon"],
-            row["max_lon"],
-            row["start_datetime"],
-            row["end_datetime"],
-            row["temporal_resolution"],
+            row.min_lat,
+            row.max_lat,
+            row.min_lon,
+            row.max_lon,
+            row.start_datetime,
+            row.end_datetime,
+            row.temporal_resolution,
         )
 
     @staticmethod
@@ -78,6 +78,11 @@ class Metadata:
         spatial_resolution,
         spatial_aggregation,
     ):
+        if temporal_aggregation is None:
+            temporal_aggregation = "none"
+        if spatial_aggregation is None:
+            spatial_aggregation = "none"
+
         df_overlap = self.df_meta[
             (self.df_meta["variable"] == variable)
             & (self.df_meta["min_lat"] <= max_lat)
@@ -86,10 +91,10 @@ class Metadata:
             & (self.df_meta["max_lon"] >= min_lon)
             & (pd.to_datetime(self.df_meta["start_datetime"]) <= pd.to_datetime(end_datetime))
             & (pd.to_datetime(self.df_meta["end_datetime"]) >= pd.to_datetime(start_datetime))
-            & (self.df_meta["temporal_aggregation"] == temporal_aggregation)
-            & (self.df_meta["spatial_aggregation"] == spatial_aggregation)
             & (self.df_meta["temporal_resolution"] == temporal_resolution)
             & (self.df_meta["spatial_resolution"] == spatial_resolution)
+            & (self.df_meta["temporal_aggregation"] == temporal_aggregation)
+            & (self.df_meta["spatial_aggregation"] == spatial_aggregation)
         ]
 
         ds_query = gen_empty_xarray(
@@ -107,7 +112,7 @@ class Metadata:
             dims=["time", "latitude", "longitude"],
         )
 
-        for _, row in df_overlap.itertuples():
+        for row in df_overlap.itertuples():
             ds_meta = self._gen_xarray_for_meta_row(row)
             mask = self._mask_query_with_meta(ds_query, ds_meta)
             false_mask = false_mask | mask

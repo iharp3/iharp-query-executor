@@ -40,7 +40,7 @@ class QueryExecutor(ABC):
 
         # query internal variables
         self.variable_short_name = long_short_name_dict[self.variable]
-        self.metadata = Metadata("metadata.csv")  # needs to be changed
+        self.metadata = Metadata("/home/huan1531/iharp-query-executor/src/metadata.csv")  # needs to be changed
 
     @abstractmethod
     def execute(self):
