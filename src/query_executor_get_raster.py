@@ -122,7 +122,7 @@ class GetRasterExecutor(QueryExecutor):
                 ds = ds.rename({"valid_time": "time"})
                 ds = ds.drop_vars("number")
                 ds = ds.drop_vars("expver")
-            ds.sel(
+            ds = ds.sel(
                 time=slice(self.start_datetime, self.end_datetime),
                 latitude=slice(self.max_lat, self.min_lat),
                 longitude=slice(self.min_lon, self.max_lon),
