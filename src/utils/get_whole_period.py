@@ -182,7 +182,7 @@ def get_whole_ranges_between(start, end):
 
 
 def get_total_hours_in_year(year):
-    return 24 * 365 if calendar.isleap(year) else 24 * 366
+    return 24 * 366 if calendar.isleap(year) else 24 * 365
 
 
 def get_total_hours_in_month(month):
