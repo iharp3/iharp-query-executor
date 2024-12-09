@@ -1,13 +1,7 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
 
 from metadata import Metadata
 from utils.const import long_short_name_dict
-
-
-def gen_download_file_name():
-    dt = datetime.now().strftime("%Y%m%d_%H-%M-%S")
-    return f"download_{dt}.nc"
 
 
 class QueryExecutor(ABC):
