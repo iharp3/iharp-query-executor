@@ -16,7 +16,7 @@ min_lat = 60
 min_lon = -70
 max_lon = -10
 
-class TestGetRasterExecutor(unittest.TestCase):
+class TestGetRaster(unittest.TestCase):
     def test_year(self):
         start_datetime = "2020-01-01 00:00:00"
         end_datetime = "2023-12-31 23:00:00"
@@ -35,6 +35,7 @@ class TestGetRasterExecutor(unittest.TestCase):
         )
         res = qe.execute()
         self.assertIsInstance(res, xr.Dataset)
+        self.assertEqual(len(res.dims), 3)
         self.assertGreater(res.time.size, 0)
         self.assertGreater(res.latitude.size, 0)
         self.assertGreater(res.longitude.size, 0)
@@ -57,6 +58,7 @@ class TestGetRasterExecutor(unittest.TestCase):
         )
         res = qe.execute()
         self.assertIsInstance(res, xr.Dataset)
+        self.assertEqual(len(res.dims), 3)
         self.assertGreater(res.time.size, 0)
         self.assertGreater(res.latitude.size, 0)
         self.assertGreater(res.longitude.size, 0)
@@ -84,6 +86,7 @@ class TestGetRasterExecutor(unittest.TestCase):
         )
         res = qe.execute()
         self.assertIsInstance(res, xr.Dataset)
+        self.assertEqual(len(res.dims), 3)
         self.assertGreater(res.time.size, 0)
         self.assertGreater(res.latitude.size, 0)
         self.assertGreater(res.longitude.size, 0)
