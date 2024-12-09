@@ -84,7 +84,6 @@ class GetRasterExecutor(QueryExecutor):
                 months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
                 if leftover_start_month == leftover_end_month:
                     days = [str(i).zfill(2) for i in range(leftover_start_day, leftover_end_day + 1)]
-            
 
             dataset = "reanalysis-era5-single-levels"
             request = {
