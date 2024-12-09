@@ -21,6 +21,10 @@ class GetRasterExecutor(QueryExecutor):
         spatial_resolution=0.25,  # e.g., 0.25, 0.5, 1.0
         spatial_aggregation=None,  # e.g., "mean", "max", "min"
     ):
+        if temporal_resolution == "hour":
+            temporal_aggregation = None
+        if spatial_resolution == 0.25:
+            spatial_aggregation = None
         super().__init__(
             variable,
             start_datetime,
