@@ -66,8 +66,8 @@ class HeatmapExecutor(QueryExecutor):
         for start_year, end_year in year_range:
             get_raster_year = GetRasterExecutor(
                 self.variable,
-                start_year,
-                end_year,
+                str(start_year),
+                str(end_year),
                 self.min_lat,
                 self.max_lat,
                 self.min_lon,
@@ -76,12 +76,12 @@ class HeatmapExecutor(QueryExecutor):
                 temporal_aggregation="mean",
             )
             ds_year.append(get_raster_year.execute())
-            year_hours += [get_total_hours_in_year(y) for y in range(start_year, end_year + 1)]
+            year_hours += [get_total_hours_in_year(y) for y in range(start_year.year, end_year.year + 1)]
         for start_month, end_month in month_range:
             get_raster_month = GetRasterExecutor(
                 self.variable,
-                start_month,
-                end_month,
+                str(start_month),
+                str(end_month),
                 self.min_lat,
                 self.max_lat,
                 self.min_lon,
@@ -94,8 +94,8 @@ class HeatmapExecutor(QueryExecutor):
         for start_day, end_day in day_range:
             get_raster_day = GetRasterExecutor(
                 self.variable,
-                start_day,
-                end_day,
+                str(start_day),
+                str(end_day),
                 self.min_lat,
                 self.max_lat,
                 self.min_lon,
@@ -108,8 +108,8 @@ class HeatmapExecutor(QueryExecutor):
         for start_hour, end_hour in hour_range:
             get_raster_hour = GetRasterExecutor(
                 self.variable,
-                start_hour,
-                end_hour,
+                str(start_hour),
+                str(end_hour),
                 self.min_lat,
                 self.max_lat,
                 self.min_lon,
