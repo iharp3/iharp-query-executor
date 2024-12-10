@@ -65,3 +65,12 @@ class TestFindTime(unittest.TestCase):
         filter_predicate = ">"
         filter_value = 263
         self._test_suite(start_datetime, end_datetime, time_resolution, time_agg_method, filter_predicate, filter_value)
+
+    def test_hourly_3(self):
+        start_datetime = "2020-01-01 10:00:00"
+        end_datetime = "2023-12-31 20:00:00"
+        time_resolution = "hour"
+        time_agg_method = "mean"
+        filter_predicate = ">"
+        filter_value = 363
+        self._test_suite(start_datetime, end_datetime, time_resolution, time_agg_method, filter_predicate, filter_value)

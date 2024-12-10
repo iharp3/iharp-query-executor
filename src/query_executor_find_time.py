@@ -175,7 +175,6 @@ class FindTimeExecutor(QueryExecutor):
             day_range = time_array_to_range(days, "day")
             day_min, day_max = self._get_range_min_max(day_range, "day")
             for day in days:
-                print(day)
                 day_datetime = f"{day} 00:00:00"
                 curr_day_min = day_min.sel(time=day_datetime)[self.variable_short_name].values.min()
                 curr_day_max = day_max.sel(time=day_datetime)[self.variable_short_name].values.max()
@@ -200,16 +199,14 @@ class FindTimeExecutor(QueryExecutor):
 
         result_undetermined = result["time"].where(result[self.variable_short_name].isnull(), drop=True)
         if result_undetermined.size > 0:
-            min_hour = result_undetermined.min().values
-            max_hour = result_undetermined.max().values
-            min_hour = pd.Timestamp(min_hour).strftime("%Y-%m-%d %H:%M:%S")
-            max_hour = pd.Timestamp(max_hour).strftime("%Y-%m-%d %H:%M:%S")
-            print("Check hour: ", min_hour, max_hour)
-
-            rest = self._execute_baseline(start_datetime=min_hour, end_datetime=max_hour)
-
-            result[self.variable_short_name].loc[f"{min_hour}":f"{max_hour}"] = rest[self.variable_short_name]
-            result[self.variable_short_name] = result[self.variable_short_name].astype(bool)
+            hour_range = time_array_to_range(result_undetermined.values, "hour")
+            for start, end in hour_range:
+                start = start.strftime("%Y-%m-%d %H:%M:%S")
+                end = end.strftime("%Y-%m-%d %H:%M:%S")
+                print("Check hour: ", start, end)
+                rest = self._execute_baseline(start_datetime=start, end_datetime=end)
+                result[self.variable_short_name].loc[f"{start}":f"{end}"] = rest[self.variable_short_name]
+        result[self.variable_short_name] = result[self.variable_short_name].astype(bool)
         return result
 
     def _get_range_min_max(self, _range, temporal_res):
