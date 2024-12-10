@@ -212,3 +212,47 @@ def number_of_hours_inclusive(start_hour, end_hour):
     start_hour = pd.to_datetime(start_hour)
     end_hour = pd.to_datetime(end_hour)
     return int((end_hour - start_hour) / pd.Timedelta(hours=1)) + 1
+
+
+def time_array_to_range(time_array, resolution):
+    """
+    Range: [[pd.Timestamp(start), pd.Timestamp(end)], ...]
+    """
+    if len(time_array) == 0:
+        return []
+
+    if resolution == "year":
+        pd_delta = pd.Timedelta(days=366)
+        time_array = [f"{year}-01-01" for year in time_array]
+    elif resolution == "month":
+        pd_delta = pd.Timedelta(days=31)
+    elif resolution == "day":
+        pd_delta = pd.Timedelta(days=1)
+    elif resolution == "hour":
+        pd_delta = pd.Timedelta(hours=1)
+
+    sorted_array = sorted(time_array)
+    time_range = []
+    start = sorted_array[0]
+    start_dt = pd.Timestamp(start)
+    end_dt = start_dt
+    for time in sorted_array[1:]:
+        if pd.Timestamp(time) - end_dt > pd_delta:
+            time_range.append([start_dt, end_dt])
+            start_dt = pd.Timestamp(time)
+        end_dt = pd.Timestamp(time)
+    if start_dt != end_dt:
+        time_range.append([start_dt, end_dt])
+
+    # post processing
+    if resolution == "year":
+        for r in time_range:
+            r[1] = pd.Timestamp(f"{r[1].year}-12-31 23:00:00")
+    elif resolution == "month":
+        for r in time_range:
+            r[1] = pd.Timestamp(f"{r[1].year}-{r[1].month}-{get_last_date_of_month(r[1])} 23:00:00")
+    elif resolution == "day":
+        for r in time_range:
+            r[1] = pd.Timestamp(f"{r[1].year}-{r[1].month}-{r[1].day} 23:00:00")
+
+    return time_range
