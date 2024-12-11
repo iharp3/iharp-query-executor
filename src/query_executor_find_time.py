@@ -239,6 +239,6 @@ class FindTimeExecutor(QueryExecutor):
             range_max = get_max_executor.execute()
             ds_min.append(range_min)
             ds_max.append(range_max)
-        ds_min_concat = xr.concat(ds_min, dim="time")
-        ds_max_concat = xr.concat(ds_max, dim="time")
+        ds_min_concat = xr.concat(ds_min, dim="valid_time")
+        ds_max_concat = xr.concat(ds_max, dim="valid_time")
         return ds_min_concat.compute(), ds_max_concat.compute()

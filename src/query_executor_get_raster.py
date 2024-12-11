@@ -131,5 +131,5 @@ class GetRasterExecutor(QueryExecutor):
                 longitude=slice(self.min_lon, self.max_lon),
             )
             ds_list.append(ds)
-        ds = xr.concat([i.chunk() for i in ds_list], dim="time")
+        ds = xr.concat([i.chunk() for i in ds_list], dim="valid_time")
         return ds
