@@ -34,7 +34,29 @@ class QueryExecutor(ABC):
 
         # query internal variables
         self.variable_short_name = long_short_name_dict[self.variable]
-        self.metadata = Metadata("/home/huan1531/iharp-query-executor/src/metadata.csv")  # needs to be changed
+        self.metadata = Metadata("/data/iharp-customized-storage/storage/metadata.csv")  # needs to be changed
+        # customize to Ana's metadata
+        # add columns
+        self.metadata.df_meta["file_path"] = (
+            "/data/iharp-customized-storage/storage/" + self.metadata.df_meta["file_name"]
+        )
+        # rename columns
+        self.metadata.df_meta = self.metadata.df_meta.rename(
+            columns={
+                "max_lat_N": "max_lat",
+                "min_lat_S": "min_lat",
+                "max_long_E": "max_lon",
+                "min_long_W": "min_lon",
+                "start_time": "start_datetime",
+                "end_time": "end_datetime",
+                "temporal_agg_type": "temporal_aggregation",
+                "spatial_agg_type": "spatial_aggregation",
+            }
+        )
+        # change literal conversion
+        self.metadata.df_meta["temporal_resolution"] = self.metadata.df_meta["temporal_resolution"].apply(
+            lambda x: {"H": "hour", "D": "day", "M": "month", "Y": "year"}[x]
+        )
 
     @abstractmethod
     def execute(self):
