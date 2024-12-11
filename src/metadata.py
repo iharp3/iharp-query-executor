@@ -100,6 +100,7 @@ class Metadata:
         ds_query = gen_empty_xarray(
             min_lat, max_lat, min_lon, max_lon, start_datetime, end_datetime, temporal_resolution
         )
+
         false_mask = xr.DataArray(
             data=np.zeros(
                 (
