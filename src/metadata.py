@@ -100,8 +100,9 @@ class Metadata:
         ds_query = gen_empty_xarray(
             min_lat, max_lat, min_lon, max_lon, start_datetime, end_datetime, temporal_resolution
         )
+
         false_mask = xr.DataArray(
-            np.zeros(
+            data=np.zeros(
                 (
                     ds_query.sizes["time"],
                     ds_query.sizes["latitude"],
@@ -109,6 +110,11 @@ class Metadata:
                 ),
                 dtype=bool,
             ),
+            coords={
+                "time": ds_query["time"],
+                "latitude": ds_query["latitude"],
+                "longitude": ds_query["longitude"],
+            },
             dims=["time", "latitude", "longitude"],
         )
 
