@@ -78,9 +78,9 @@ class Metadata:
         spatial_resolution,
         spatial_aggregation,
     ):
-        if temporal_aggregation is None:
+        if temporal_aggregation is None or temporal_resolution == "hour":
             temporal_aggregation = "none"
-        if spatial_aggregation is None:
+        if spatial_aggregation is None or spatial_resolution == 0.25:
             spatial_aggregation = "none"
 
         df_overlap = self.df_meta[
@@ -101,7 +101,7 @@ class Metadata:
             min_lat, max_lat, min_lon, max_lon, start_datetime, end_datetime, temporal_resolution
         )
         false_mask = xr.DataArray(
-            np.zeros(
+            data=np.zeros(
                 (
                     ds_query.sizes["time"],
                     ds_query.sizes["latitude"],
@@ -109,6 +109,11 @@ class Metadata:
                 ),
                 dtype=bool,
             ),
+            coords={
+                "time": ds_query["time"],
+                "latitude": ds_query["latitude"],
+                "longitude": ds_query["longitude"],
+            },
             dims=["time", "latitude", "longitude"],
         )
 
