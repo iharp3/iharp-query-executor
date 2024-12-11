@@ -4,6 +4,7 @@ import pandas as pd
 import xarray as xr
 
 from query_executor import QueryExecutor
+from utils.const import time_resolution_to_freq
 
 
 class GetRasterExecutor(QueryExecutor):
@@ -110,21 +111,44 @@ class GetRasterExecutor(QueryExecutor):
         file_list, api = self._check_metadata()
 
         # 1. call apis
+        download_file_list = []
         if api:
             c = cdsapi.Client()
             for dataset, request in api:
                 file_name = self._gen_download_file_name()
                 c.retrieve(dataset, request).download(file_name)
-                file_list.append(file_name)
+                download_file_list.append(file_name)
 
         # 2. execute query
         ds_list = []
-        for file in file_list:
+        # 2.1 read downloaded files
+        for file in download_file_list:
             ds = xr.open_dataset(file, engine="netcdf4")
             if "valid_time" in ds.dims:  # for downloaded data
                 ds = ds.rename({"valid_time": "time"})
                 ds = ds.drop_vars("number")
                 ds = ds.drop_vars("expver")
+            ds = ds.sel(
+                time=slice(self.start_datetime, self.end_datetime),
+                latitude=slice(self.max_lat, self.min_lat),
+                longitude=slice(self.min_lon, self.max_lon),
+            )
+            if self.temporal_resolution != "hour":
+                resampled = ds.resample(time=time_resolution_to_freq(self.temporal_resolution))
+                if self.temporal_aggregation == "mean":
+                    ds = resampled.mean()
+                elif self.temporal_aggregation == "max":
+                    ds = resampled.max()
+                elif self.temporal_aggregation == "min":
+                    ds = resampled.min()
+                else:
+                    raise ValueError("Invalid temporal_aggregation")
+            # TODO: spatial resample
+            ds_list.append(ds)
+
+        # 2.2 read local files
+        for file in file_list:
+            ds = xr.open_dataset(file, engine="netcdf4")
             ds = ds.sel(
                 time=slice(self.start_datetime, self.end_datetime),
                 latitude=slice(self.max_lat, self.min_lat),
