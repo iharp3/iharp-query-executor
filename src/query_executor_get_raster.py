@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 import cdsapi
 import pandas as pd
 import xarray as xr
@@ -67,9 +68,13 @@ class GetRasterExecutor(QueryExecutor):
             leftover_max_lat = leftover.latitude.max().item()
             leftover_min_lon = leftover.longitude.min().item()
             leftover_max_lon = leftover.longitude.max().item()
+            leftover_min_lat = math.floor(leftover_min_lat)
+            leftover_max_lat = math.ceil(leftover_max_lat)
+            leftover_min_lon = math.floor(leftover_min_lon)
+            leftover_max_lon = math.ceil(leftover_max_lon)
+
             leftover_start_datetime = pd.Timestamp(leftover.time.min().item())
             leftover_end_datetime = pd.Timestamp(leftover.time.max().item())
-
             leftover_start_year, leftover_start_month, leftover_start_day = (
                 leftover_start_datetime.year,
                 leftover_start_datetime.month,
@@ -81,18 +86,48 @@ class GetRasterExecutor(QueryExecutor):
                 leftover_end_datetime.day,
             )
 
+            # months = [str(i).zfill(2) for i in range(1, 13)]
+            # days = [str(i).zfill(2) for i in range(1, 32)]
+            # if leftover_start_year == leftover_end_year:
+            #     months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
+            #     if leftover_start_month == leftover_end_month:
+            #         days = [str(i).zfill(2) for i in range(leftover_start_day, leftover_end_day + 1)]
+
+            years = [str(i) for i in range(leftover_start_year, leftover_end_year + 1)]
             months = [str(i).zfill(2) for i in range(1, 13)]
             days = [str(i).zfill(2) for i in range(1, 32)]
-            if leftover_start_year == leftover_end_year:
-                months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
-                if leftover_start_month == leftover_end_month:
-                    days = [str(i).zfill(2) for i in range(leftover_start_day, leftover_end_day + 1)]
+            if self.temporal_resolution == "year":
+                pass
+            elif self.temporal_resolution == "month":
+                if leftover_start_year == leftover_end_year:
+                    months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
+            elif self.temporal_resolution == "day" or self.temporal_resolution == "hour":
+                if leftover_start_year == leftover_end_year:
+                    months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
+                    if leftover_start_month == leftover_end_month:
+                        days = [str(i).zfill(2) for i in range(leftover_start_day, leftover_end_day + 1)]
+
+            # if self.temporal_resolution =="year":
+            #     months = [str(i).zfill(2) for i in range(1, 13)]
+            #     days = [str(i).zfill(2) for i in range(1, 32)]
+            # elif self.temporal_resolution == "month":
+            #     if leftover_start_year == leftover_end_year:
+            #         months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
+            #     else:
+            #         months = [str(i).zfill(2) for i in range(1, 13)]
+            #     days = [str(i).zfill(2) for i in range(1, 32)]
+            # elif self.temporal_resolution == "day":
+            #     if leftover_start_year == leftover_end_year:
+            #         months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
+            #         if leftover_start_month == leftover_end_month:
+            #             days = [str(i).zfill(2) for i in range(leftover_start_day, leftover_end_day + 1)]
+            #     else:
 
             dataset = "reanalysis-era5-single-levels"
             request = {
                 "product_type": ["reanalysis"],
                 "variable": [self.variable],
-                "year": [str(i) for i in range(leftover_start_year, leftover_end_year + 1)],
+                "year": years,
                 "month": months,
                 "day": days,
                 "time": [f"{str(i).zfill(2)}:00" for i in range(0, 24)],
@@ -141,7 +176,19 @@ class GetRasterExecutor(QueryExecutor):
                     ds = resampled.min()
                 else:
                     raise ValueError("Invalid temporal_aggregation")
-            # TODO: spatial resample
+            # spatial resample
+            if self.spatial_resolution > 0.25:
+                c_f = int(self.spatial_resolution / 0.25)
+                ds_coarsen = ds.coarsen(latitude=c_f, longitude=c_f, boundary="trim")
+                if self.spatial_aggregation == "mean":
+                    ds = ds_coarsen.mean()
+                elif self.spatial_aggregation == "max":
+                    ds = ds_coarsen.max()
+                elif self.spatial_aggregation == "min":
+                    ds = ds_coarsen.min()
+                else:
+                    raise ValueError("Invalid spatial_aggregation")
+
             ds_list.append(ds)
 
         # 2.2 read local files

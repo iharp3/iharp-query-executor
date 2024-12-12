@@ -6,6 +6,7 @@ long_short_name_dict = {
 
 lat_range = np.arange(-90, 90.1, 0.25)
 lon_range = np.arange(-180, 180.1, 0.25)
+lat_range_reverse = lat_range[::-1]
 
 
 def time_resolution_to_freq(time_resolution):

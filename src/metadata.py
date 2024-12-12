@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from utils.const import lat_range, lon_range, time_resolution_to_freq
+from utils.const import lat_range, lon_range, lat_range_reverse, time_resolution_to_freq
 
 
 def gen_empty_xarray(
@@ -13,9 +13,12 @@ def gen_empty_xarray(
     start_datetime,
     end_datetime,
     temporal_resolution,
+    spatial_resolution,
 ):
     lat_start = lat_range.searchsorted(min_lat, side="left")
     lat_end = lat_range.searchsorted(max_lat, side="right")
+    lat_reverse_start = len(lat_range) - lat_end
+    lat_reverse_end = len(lat_range) - lat_start
     lon_start = lon_range.searchsorted(min_lon, side="left")
     lon_end = lon_range.searchsorted(max_lon, side="right")
     ds_empty = xr.Dataset()
@@ -24,8 +27,10 @@ def gen_empty_xarray(
         end=end_datetime,
         freq=time_resolution_to_freq(temporal_resolution),
     )
-    ds_empty["latitude"] = lat_range[lat_start:lat_end]
+    ds_empty["latitude"] = lat_range_reverse[lat_reverse_start:lat_reverse_end]
     ds_empty["longitude"] = lon_range[lon_start:lon_end]
+    c_f = int(spatial_resolution / 0.25)
+    ds_empty = ds_empty.coarsen(latitude=c_f, longitude=c_f, boundary="trim").max()
     return ds_empty
 
 
@@ -45,6 +50,7 @@ class Metadata:
                 row.start_datetime,
                 row.end_datetime,
                 overwrite_temporal_resolution,
+                row.spatial_resolution,
             )
         return gen_empty_xarray(
             row.min_lat,
@@ -54,6 +60,7 @@ class Metadata:
             row.start_datetime,
             row.end_datetime,
             row.temporal_resolution,
+            row.spatial_resolution,
         )
 
     @staticmethod
@@ -98,7 +105,14 @@ class Metadata:
         ]
 
         ds_query = gen_empty_xarray(
-            min_lat, max_lat, min_lon, max_lon, start_datetime, end_datetime, temporal_resolution
+            min_lat,
+            max_lat,
+            min_lon,
+            max_lon,
+            start_datetime,
+            end_datetime,
+            temporal_resolution,
+            spatial_resolution,
         )
 
         false_mask = xr.DataArray(
