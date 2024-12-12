@@ -21,11 +21,8 @@ class GetRasterExecutor(QueryExecutor):
         temporal_aggregation=None,  # e.g., "mean", "max", "min"
         spatial_resolution=0.25,  # e.g., 0.25, 0.5, 1.0
         spatial_aggregation=None,  # e.g., "mean", "max", "min"
+        metadata=None,  # metadata file path
     ):
-        if temporal_resolution == "hour":
-            temporal_aggregation = None
-        if spatial_resolution == 0.25:
-            spatial_aggregation = None
         super().__init__(
             variable,
             start_datetime,
@@ -38,6 +35,7 @@ class GetRasterExecutor(QueryExecutor):
             temporal_aggregation,
             spatial_resolution,
             spatial_aggregation,
+            metadata=metadata,
         )
 
     def _gen_download_file_name(self):

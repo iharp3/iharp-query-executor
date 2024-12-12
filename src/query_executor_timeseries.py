@@ -15,6 +15,7 @@ class TimeseriesExecutor(QueryExecutor):
         min_lon: float,
         max_lon: float,
         time_series_aggregation_method: str,  # e.g., "mean", "max", "min"
+        metadata=None,  # metadata file path
     ):
         super().__init__(
             variable,
@@ -26,6 +27,7 @@ class TimeseriesExecutor(QueryExecutor):
             max_lon,
             temporal_resolution,
             temporal_aggregation,
+            metadata=metadata,
         )
         self.time_series_aggregation_method = time_series_aggregation_method
 

@@ -17,6 +17,7 @@ class FindAreaExecutor(QueryExecutor):
         filter_value: float,
         spatial_resolution=0.25,  # e.g., 0.25, 0.5, 1.0
         spatial_aggregation=None,  # e.g., "mean", "max", "min"
+        metadata=None,  # metadata file path
     ):
         super().__init__(
             variable,
@@ -28,6 +29,7 @@ class FindAreaExecutor(QueryExecutor):
             max_lon,
             spatial_resolution=spatial_resolution,
             spatial_aggregation=spatial_aggregation,
+            metadata=metadata,
         )
         self.heatmap_aggregation_method = heatmap_aggregation_method
         self.filter_predicate = filter_predicate

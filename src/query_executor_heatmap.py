@@ -27,6 +27,7 @@ class HeatmapExecutor(QueryExecutor):
         heatmap_aggregation_method: str,  # e.g., "mean", "max", "min"
         spatial_resolution=0.25,  # e.g., 0.25, 0.5, 1.0
         spatial_aggregation=None,  # e.g., "mean", "max", "min"
+        metadata=None,  # metadata file path
     ):
         super().__init__(
             variable,
@@ -38,6 +39,7 @@ class HeatmapExecutor(QueryExecutor):
             max_lon,
             spatial_resolution=spatial_resolution,
             spatial_aggregation=spatial_aggregation,
+            metadata=metadata,
         )
         self.heatmap_aggregation_method = heatmap_aggregation_method
 

@@ -22,6 +22,7 @@ class FindTimeExecutor(QueryExecutor):
         time_series_aggregation_method: str,  # e.g., "mean", "max", "min"
         filter_predicate: str,  # e.g., ">", "<", "==", "!=", ">=", "<="
         filter_value: float,
+        metadata=None,  # metadata file path
     ):
         super().__init__(
             variable,
@@ -33,6 +34,7 @@ class FindTimeExecutor(QueryExecutor):
             max_lon,
             temporal_resolution,
             temporal_aggregation,
+            metadata=metadata,
         )
         self.time_series_aggregation_method = time_series_aggregation_method
         self.filter_predicate = filter_predicate
