@@ -200,5 +200,11 @@ class GetRasterExecutor(QueryExecutor):
                 longitude=slice(self.min_lon, self.max_lon),
             )
             ds_list.append(ds)
-        ds = xr.concat([i.chunk() for i in ds_list], dim="time")
+        # compat="override" is a temporal walkaround as pre-aggregation value conflicts with downloaded data
+        # future solution: use new encoding to write pre-aggregated data
+        try:
+            ds = xr.merge([i.chunk() for i in ds_list], compat="no_conflicts")
+        except ValueError:
+            print("WARNING: conflict in merging data, use override")
+            ds = xr.merge([i.chunk() for i in ds_list[::-1]], compat="override")
         return ds
