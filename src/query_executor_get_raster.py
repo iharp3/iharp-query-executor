@@ -128,11 +128,11 @@ class GetRasterExecutor(QueryExecutor):
         # 3.1 read downloaded files
         for file in download_file_list:
             ds = xr.open_dataset(file, engine="netcdf4")
-            if "valid_time" in ds.dims:
+            if "valid_time" in ds.coords:
                 ds = ds.rename({"valid_time": "time"})
-            if "number" in ds.dims:
+            if "number" in ds.coords:
                 ds = ds.drop_vars("number")
-            if "expver" in ds.dims:
+            if "expver" in ds.coords:
                 ds = ds.drop_vars("expver")
             ds = ds.sel(
                 time=slice(self.start_datetime, self.end_datetime),
