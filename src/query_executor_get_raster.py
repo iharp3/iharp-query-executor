@@ -64,15 +64,10 @@ class GetRasterExecutor(QueryExecutor):
         local_files = df_overlap["file_path"].tolist()
         api_calls = []
         if leftover is not None:
-            leftover_min_lat = leftover.latitude.min().item()
-            leftover_max_lat = leftover.latitude.max().item()
-            leftover_min_lon = leftover.longitude.min().item()
-            leftover_max_lon = leftover.longitude.max().item()
-            leftover_min_lat = math.floor(leftover_min_lat)
-            leftover_max_lat = math.ceil(leftover_max_lat)
-            leftover_min_lon = math.floor(leftover_min_lon)
-            leftover_max_lon = math.ceil(leftover_max_lon)
-
+            leftover_min_lat = math.floor(leftover.latitude.min().item())
+            leftover_max_lat = math.ceil(leftover.latitude.max().item())
+            leftover_min_lon = math.floor(leftover.longitude.min().item())
+            leftover_max_lon = math.ceil(leftover.longitude.max().item())
             leftover_start_datetime = pd.Timestamp(leftover.time.min().item())
             leftover_end_datetime = pd.Timestamp(leftover.time.max().item())
             leftover_start_year, leftover_start_month, leftover_start_day = (
@@ -86,42 +81,17 @@ class GetRasterExecutor(QueryExecutor):
                 leftover_end_datetime.day,
             )
 
-            # months = [str(i).zfill(2) for i in range(1, 13)]
-            # days = [str(i).zfill(2) for i in range(1, 32)]
-            # if leftover_start_year == leftover_end_year:
-            #     months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
-            #     if leftover_start_month == leftover_end_month:
-            #         days = [str(i).zfill(2) for i in range(leftover_start_day, leftover_end_day + 1)]
-
             years = [str(i) for i in range(leftover_start_year, leftover_end_year + 1)]
             months = [str(i).zfill(2) for i in range(1, 13)]
             days = [str(i).zfill(2) for i in range(1, 32)]
-            if self.temporal_resolution == "year":
-                pass
-            elif self.temporal_resolution == "month":
+            if self.temporal_resolution == "month":
                 if leftover_start_year == leftover_end_year:
                     months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
-            elif self.temporal_resolution == "day" or self.temporal_resolution == "hour":
+            if self.temporal_resolution == "day" or self.temporal_resolution == "hour":
                 if leftover_start_year == leftover_end_year:
                     months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
                     if leftover_start_month == leftover_end_month:
                         days = [str(i).zfill(2) for i in range(leftover_start_day, leftover_end_day + 1)]
-
-            # if self.temporal_resolution =="year":
-            #     months = [str(i).zfill(2) for i in range(1, 13)]
-            #     days = [str(i).zfill(2) for i in range(1, 32)]
-            # elif self.temporal_resolution == "month":
-            #     if leftover_start_year == leftover_end_year:
-            #         months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
-            #     else:
-            #         months = [str(i).zfill(2) for i in range(1, 13)]
-            #     days = [str(i).zfill(2) for i in range(1, 32)]
-            # elif self.temporal_resolution == "day":
-            #     if leftover_start_year == leftover_end_year:
-            #         months = [str(i).zfill(2) for i in range(leftover_start_month, leftover_end_month + 1)]
-            #         if leftover_start_month == leftover_end_month:
-            #             days = [str(i).zfill(2) for i in range(leftover_start_day, leftover_end_day + 1)]
-            #     else:
 
             dataset = "reanalysis-era5-single-levels"
             request = {
@@ -141,9 +111,10 @@ class GetRasterExecutor(QueryExecutor):
         return local_files, api_calls
 
     def execute(self):
+        # 1. check metadata
         file_list, api = self._check_metadata()
 
-        # 1. call apis
+        # 2. call apis
         download_file_list = []
         if api:
             c = cdsapi.Client()
@@ -152,20 +123,23 @@ class GetRasterExecutor(QueryExecutor):
                 c.retrieve(dataset, request).download(file_name)
                 download_file_list.append(file_name)
 
-        # 2. execute query
+        # 3. execute query
         ds_list = []
-        # 2.1 read downloaded files
+        # 3.1 read downloaded files
         for file in download_file_list:
             ds = xr.open_dataset(file, engine="netcdf4")
-            if "valid_time" in ds.dims:  # for downloaded data
+            if "valid_time" in ds.dims:
                 ds = ds.rename({"valid_time": "time"})
+            if "number" in ds.dims:
                 ds = ds.drop_vars("number")
+            if "expver" in ds.dims:
                 ds = ds.drop_vars("expver")
             ds = ds.sel(
                 time=slice(self.start_datetime, self.end_datetime),
                 latitude=slice(self.max_lat, self.min_lat),
                 longitude=slice(self.min_lon, self.max_lon),
             )
+            # temporal resample
             if self.temporal_resolution != "hour":
                 resampled = ds.resample(time=time_resolution_to_freq(self.temporal_resolution))
                 if self.temporal_aggregation == "mean":
@@ -179,19 +153,18 @@ class GetRasterExecutor(QueryExecutor):
             # spatial resample
             if self.spatial_resolution > 0.25:
                 c_f = int(self.spatial_resolution / 0.25)
-                ds_coarsen = ds.coarsen(latitude=c_f, longitude=c_f, boundary="trim")
+                coarsened = ds.coarsen(latitude=c_f, longitude=c_f, boundary="trim")
                 if self.spatial_aggregation == "mean":
-                    ds = ds_coarsen.mean()
+                    ds = coarsened.mean()
                 elif self.spatial_aggregation == "max":
-                    ds = ds_coarsen.max()
+                    ds = coarsened.max()
                 elif self.spatial_aggregation == "min":
-                    ds = ds_coarsen.min()
+                    ds = coarsened.min()
                 else:
                     raise ValueError("Invalid spatial_aggregation")
-
             ds_list.append(ds)
 
-        # 2.2 read local files
+        # 3.2 read local files
         for file in file_list:
             ds = xr.open_dataset(file, engine="netcdf4")
             ds = ds.sel(
@@ -200,11 +173,13 @@ class GetRasterExecutor(QueryExecutor):
                 longitude=slice(self.min_lon, self.max_lon),
             )
             ds_list.append(ds)
+
+        # 3.3 assemble result
         # compat="override" is a temporal walkaround as pre-aggregation value conflicts with downloaded data
-        # future solution: use new encoding to write pre-aggregated data
+        # future solution: use new encoding when write pre-aggregated data
         try:
             ds = xr.merge([i.chunk() for i in ds_list], compat="no_conflicts")
         except ValueError:
             print("WARNING: conflict in merging data, use override")
-            ds = xr.merge([i.chunk() for i in ds_list[::-1]], compat="override")
+            ds = xr.merge([i.chunk() for i in ds_list], compat="override")
         return ds

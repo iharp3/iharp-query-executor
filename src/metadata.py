@@ -42,16 +42,9 @@ class Metadata:
     @staticmethod
     def _gen_xarray_for_meta_row(row, overwrite_temporal_resolution=None):
         if overwrite_temporal_resolution is not None:
-            return gen_empty_xarray(
-                row.min_lat,
-                row.max_lat,
-                row.min_lon,
-                row.max_lon,
-                row.start_datetime,
-                row.end_datetime,
-                overwrite_temporal_resolution,
-                row.spatial_resolution,
-            )
+            t_resolution = overwrite_temporal_resolution
+        else:
+            t_resolution = row.temporal_resolution
         return gen_empty_xarray(
             row.min_lat,
             row.max_lat,
@@ -59,7 +52,7 @@ class Metadata:
             row.max_lon,
             row.start_datetime,
             row.end_datetime,
-            row.temporal_resolution,
+            t_resolution,
             row.spatial_resolution,
         )
 
