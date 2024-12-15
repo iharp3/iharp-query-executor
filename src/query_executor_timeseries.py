@@ -33,6 +33,7 @@ class TimeseriesExecutor(QueryExecutor):
 
     def execute(self):
         get_raster_executor = GetRasterExecutor(
+            metadata=self.metadata.f_path,
             variable=self.variable,
             start_datetime=self.start_datetime,
             end_datetime=self.end_datetime,
@@ -42,6 +43,8 @@ class TimeseriesExecutor(QueryExecutor):
             max_lon=self.max_lon,
             temporal_resolution=self.temporal_resolution,
             temporal_aggregation=self.temporal_aggregation,
+            spatial_resolution=1,
+            spatial_aggregation=self.time_series_aggregation_method,
         )
         raster = get_raster_executor.execute()
         if self.time_series_aggregation_method == "mean":
