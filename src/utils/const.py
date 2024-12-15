@@ -6,7 +6,7 @@ long_short_name_dict = {
 }
 
 ds_raw = xr.Dataset()
-ds_raw["latitude"] = np.arange(90, -90.1, -0.25)
+ds_raw["latitude"] = np.arange(-90, 90.1, 0.25)
 ds_raw["longitude"] = np.arange(-180, 180.1, 0.25)
 ds_05 = ds_raw.coarsen(latitude=2, longitude=2, boundary="trim").max()
 ds_10 = ds_raw.coarsen(latitude=4, longitude=4, boundary="trim").max()
