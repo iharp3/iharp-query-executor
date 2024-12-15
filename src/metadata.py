@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from utils.const import lat_range, lon_range, lat_range_reverse, time_resolution_to_freq
+from utils.const import get_lat_lon_range, time_resolution_to_freq
 
 
 def gen_empty_xarray(
@@ -15,6 +15,7 @@ def gen_empty_xarray(
     temporal_resolution,
     spatial_resolution,
 ):
+    lat_range, lon_range, lat_range_reverse = get_lat_lon_range(spatial_resolution)
     lat_start = lat_range.searchsorted(min_lat, side="left")
     lat_end = lat_range.searchsorted(max_lat, side="right")
     lat_reverse_start = len(lat_range) - lat_end
@@ -29,8 +30,6 @@ def gen_empty_xarray(
     )
     ds_empty["latitude"] = lat_range_reverse[lat_reverse_start:lat_reverse_end]
     ds_empty["longitude"] = lon_range[lon_start:lon_end]
-    c_f = int(spatial_resolution / 0.25)
-    ds_empty = ds_empty.coarsen(latitude=c_f, longitude=c_f, boundary="trim").max()
     return ds_empty
 
 
