@@ -1,5 +1,5 @@
-from query_executor import *
-from query_executor_get_raster import GetRasterExecutor
+from .query_executor import *
+from .query_executor_get_raster import GetRasterExecutor
 
 
 class TimeseriesExecutor(QueryExecutor):
@@ -15,6 +15,8 @@ class TimeseriesExecutor(QueryExecutor):
         min_lon: float,
         max_lon: float,
         time_series_aggregation_method: str,  # e.g., "mean", "max", "min"
+        spatial_resolution=1.0,  # e.g., 0.25, 0.5, 1.0
+        spatial_aggregation="mean",  # e.g., "mean", "max", "min"
         metadata=None,  # metadata file path
     ):
         super().__init__(
@@ -27,6 +29,8 @@ class TimeseriesExecutor(QueryExecutor):
             max_lon,
             temporal_resolution,
             temporal_aggregation,
+            spatial_resolution=spatial_resolution,
+            spatial_aggregation=spatial_aggregation,
             metadata=metadata,
         )
         self.time_series_aggregation_method = time_series_aggregation_method
@@ -43,8 +47,8 @@ class TimeseriesExecutor(QueryExecutor):
             max_lon=self.max_lon,
             temporal_resolution=self.temporal_resolution,
             temporal_aggregation=self.temporal_aggregation,
-            spatial_resolution=1,
-            spatial_aggregation=self.time_series_aggregation_method,
+            spatial_resolution=self.spatial_resolution,
+            spatial_aggregation=self.spatial_aggregation,
         )
         raster = get_raster_executor.execute()
         if self.time_series_aggregation_method == "mean":

@@ -1,5 +1,5 @@
-from query_executor import QueryExecutor
-from query_executor_heatmap import HeatmapExecutor
+from .query_executor import QueryExecutor
+from .query_executor_heatmap import HeatmapExecutor
 
 
 class FindAreaExecutor(QueryExecutor):
@@ -50,6 +50,7 @@ class FindAreaExecutor(QueryExecutor):
             self.heatmap_aggregation_method,
             self.spatial_resolution,
             self.spatial_aggregation,
+            metadata=self.metadata.f_path,
         )
         hm = heatmap_executor.execute()
         if self.filter_predicate == ">":

@@ -1,10 +1,10 @@
 import pandas as pd
 import xarray as xr
 
-from query_executor import QueryExecutor
-from query_executor_get_raster import GetRasterExecutor
-from query_executor_timeseries import TimeseriesExecutor
-from utils.get_whole_period import get_whole_period_between, get_last_date_of_month, time_array_to_range
+from .query_executor import QueryExecutor
+from .query_executor_get_raster import GetRasterExecutor
+from .query_executor_timeseries import TimeseriesExecutor
+from .utils.get_whole_period import get_whole_period_between, get_last_date_of_month, time_array_to_range
 
 
 class FindTimeExecutor(QueryExecutor):
@@ -22,6 +22,8 @@ class FindTimeExecutor(QueryExecutor):
         time_series_aggregation_method: str,  # e.g., "mean", "max", "min"
         filter_predicate: str,  # e.g., ">", "<", "==", "!=", ">=", "<="
         filter_value: float,
+        spatial_resolution=1.0,  # e.g., 0.25, 0.5, 1.0
+        spatial_aggregation="mean",  # e.g., "mean", "max", "min"
         metadata=None,  # metadata file path
     ):
         super().__init__(
@@ -34,6 +36,8 @@ class FindTimeExecutor(QueryExecutor):
             max_lon,
             temporal_resolution,
             temporal_aggregation,
+            spatial_resolution=spatial_resolution,
+            spatial_aggregation=spatial_aggregation,
             metadata=metadata,
         )
         self.time_series_aggregation_method = time_series_aggregation_method
@@ -43,6 +47,9 @@ class FindTimeExecutor(QueryExecutor):
     def execute(self):
         if self.temporal_resolution == "hour" and self.filter_predicate != "!=":
             return self._execute_pyramid_hour()
+        return self._execute_baseline()
+
+    def execute_baseline(self):
         return self._execute_baseline()
 
     def _execute_baseline(self, start_datetime=None, end_datetime=None):
@@ -61,6 +68,9 @@ class FindTimeExecutor(QueryExecutor):
             self.min_lon,
             self.max_lon,
             self.time_series_aggregation_method,
+            spatial_resolution=self.spatial_resolution,
+            spatial_aggregation=self.spatial_aggregation,
+            metadata=self.metadata.f_path,
         )
         ts = timeseries_executor.execute()
         if self.filter_predicate == ">":
@@ -225,6 +235,7 @@ class FindTimeExecutor(QueryExecutor):
                 max_lon=self.max_lon,
                 temporal_resolution=temporal_res,
                 temporal_aggregation="min",
+                metadata=self.metadata.f_path,
             )
             get_max_executor = GetRasterExecutor(
                 variable=self.variable,
@@ -236,6 +247,7 @@ class FindTimeExecutor(QueryExecutor):
                 max_lon=self.max_lon,
                 temporal_resolution=temporal_res,
                 temporal_aggregation="max",
+                metadata=self.metadata.f_path,
             )
             range_min = get_min_executor.execute()
             range_max = get_max_executor.execute()
