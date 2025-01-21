@@ -23,7 +23,7 @@ def gen_empty_xarray(
     lon_start = lon_range.searchsorted(min_lon, side="left")
     lon_end = lon_range.searchsorted(max_lon, side="right")
     ds_empty = xr.Dataset()
-    ds_empty["time"] = pd.date_range(
+    ds_empty["valid_time"] = pd.date_range(
         start=start_datetime,
         end=end_datetime,
         freq=time_resolution_to_freq(temporal_resolution),
@@ -58,7 +58,7 @@ class Metadata:
     @staticmethod
     def _mask_query_with_meta(ds_query, ds_meta):
         return (
-            ds_query["time"].isin(ds_meta["time"])
+            ds_query["valid_time"].isin(ds_meta["valid_time"])
             & ds_query["latitude"].isin(ds_meta["latitude"])
             & ds_query["longitude"].isin(ds_meta["longitude"])
         )
@@ -110,18 +110,18 @@ class Metadata:
         false_mask = xr.DataArray(
             data=np.zeros(
                 (
-                    ds_query.sizes["time"],
+                    ds_query.sizes["valid_time"],
                     ds_query.sizes["latitude"],
                     ds_query.sizes["longitude"],
                 ),
                 dtype=bool,
             ),
             coords={
-                "time": ds_query["time"],
+                "valid_time": ds_query["valid_time"],
                 "latitude": ds_query["latitude"],
                 "longitude": ds_query["longitude"],
             },
-            dims=["time", "latitude", "longitude"],
+            dims=["valid_time", "latitude", "longitude"],
         )
 
         for row in df_overlap.itertuples():

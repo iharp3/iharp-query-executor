@@ -37,7 +37,7 @@ class TestFindTime(unittest.TestCase):
         res = qe.execute()
         self.assertIsInstance(res, xr.Dataset)
         self.assertEqual(len(res.dims), 1)
-        self.assertGreater(res.time.size, 0)
+        self.assertGreater(res.valid_time.size, 0)
 
     def test_yearly(self):
         start_datetime = "2020-01-01 00:00:00"

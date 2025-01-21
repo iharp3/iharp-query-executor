@@ -68,8 +68,8 @@ class GetRasterExecutor(QueryExecutor):
             leftover_max_lat = math.ceil(leftover.latitude.max().item())
             leftover_min_lon = math.floor(leftover.longitude.min().item())
             leftover_max_lon = math.ceil(leftover.longitude.max().item())
-            leftover_start_datetime = pd.Timestamp(leftover.time.min().item())
-            leftover_end_datetime = pd.Timestamp(leftover.time.max().item())
+            leftover_start_datetime = pd.Timestamp(leftover.valid_time.min().item())
+            leftover_end_datetime = pd.Timestamp(leftover.valid_time.max().item())
             leftover_start_year, leftover_start_month, leftover_start_day = (
                 leftover_start_datetime.year,
                 leftover_start_datetime.month,
@@ -128,20 +128,20 @@ class GetRasterExecutor(QueryExecutor):
         # 3.1 read downloaded files
         for file in download_file_list:
             ds = xr.open_dataset(file, engine="netcdf4")
-            if "valid_time" in ds.coords:
-                ds = ds.rename({"valid_time": "time"})
+            # if "valid_time" in ds.coords:
+            #     ds = ds.rename({"valid_time": "time"})
             if "number" in ds.coords:
                 ds = ds.drop_vars("number")
             if "expver" in ds.coords:
                 ds = ds.drop_vars("expver")
             ds = ds.sel(
-                time=slice(self.start_datetime, self.end_datetime),
+                valid_time=slice(self.start_datetime, self.end_datetime),
                 latitude=slice(self.max_lat, self.min_lat),
                 longitude=slice(self.min_lon, self.max_lon),
             )
             # temporal resample
             if self.temporal_resolution != "hour":
-                resampled = ds.resample(time=time_resolution_to_freq(self.temporal_resolution))
+                resampled = ds.resample(valid_time=time_resolution_to_freq(self.temporal_resolution))
                 if self.temporal_aggregation == "mean":
                     ds = resampled.mean()
                 elif self.temporal_aggregation == "max":
@@ -168,7 +168,7 @@ class GetRasterExecutor(QueryExecutor):
         for file in file_list:
             ds = xr.open_dataset(file, engine="netcdf4")
             ds = ds.sel(
-                time=slice(self.start_datetime, self.end_datetime),
+                valid_time=slice(self.start_datetime, self.end_datetime),
                 latitude=slice(self.max_lat, self.min_lat),
                 longitude=slice(self.min_lon, self.max_lon),
             )

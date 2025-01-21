@@ -34,7 +34,7 @@ class TestGetRaster(unittest.TestCase):
         res = qe.execute()
         self.assertIsInstance(res, xr.Dataset)
         self.assertEqual(len(res.dims), 3)
-        self.assertGreater(res.time.size, 0)
+        self.assertGreater(res.valid_time.size, 0)
         self.assertGreater(res.latitude.size, 0)
         self.assertGreater(res.longitude.size, 0)
 
@@ -76,6 +76,6 @@ class TestGetRaster(unittest.TestCase):
         res = qe.execute()
         self.assertIsInstance(res, xr.Dataset)
         self.assertEqual(len(res.dims), 3)
-        self.assertGreater(res.time.size, 0)
+        self.assertGreater(res.valid_time.size, 0)
         self.assertGreater(res.latitude.size, 0)
         self.assertGreater(res.longitude.size, 0)
